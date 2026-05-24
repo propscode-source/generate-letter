@@ -35,8 +35,9 @@ public/uploads/*
 !uploads/index.html
 !public/uploads/index.html
 
-# Dump SQL: jangan masuk image
+# Dump SQL: jangan masuk image — kecuali db_letter.sql (dipakai init MariaDB container)
 *.sql
+!db_letter.sql
 
 # Dokumentasi & file repo
 README.md
