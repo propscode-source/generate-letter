@@ -71,14 +71,14 @@ $sidebarMenus = $isSekretaris ? [
 
     <title>Sistem Monitoring Proposal dan Laporan ORMAWA FASILKOM</title>
     <link rel="icon" type="image/png" href="<?= $baseUrl ?>assets/img/favicon.png">
-    <link href="<?= $baseUrl ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.css" rel="stylesheet">
     <link href="<?= $baseUrl ?>assets/dist/css/sb-admin-2.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/morrisjs/morris.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/datatables/css/buttons.dataTables.min.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -153,23 +153,23 @@ $sidebarMenus = $isSekretaris ? [
     </div>
 </div>
 
-<script src="<?= $baseUrl ?>assets/vendor/jquery/jquery.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/bootstrap/js/bootstrap.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/metisMenu/metisMenu.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/raphael/raphael.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/morrisjs/morris.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
 <script src="<?= $baseUrl ?>assets/data/morris-data.js"></script>
 <script src="<?= $baseUrl ?>assets/dist/js/sb-admin-2.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/jquery.dataTables.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables-responsive/dataTables.responsive.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/dataTables.buttons.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/buttons.flash.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/jszip.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/pdfmake.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/vfs_fonts.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/buttons.html5.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/datatables/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.flash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.71/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.71/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
 
 <script>
     $(document).ready(function () {

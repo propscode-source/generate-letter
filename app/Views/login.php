@@ -15,10 +15,10 @@ $baseUrl = base_url();
 
     <title>Login-Sistem Monitoring Proposal dan Laporan ORMAWA FASILKOM UNSRI</title>
     
-    <link href="<?= $baseUrl ?>assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.css" rel="stylesheet">
     <link href="<?= $baseUrl ?>assets/dist/css/sb-admin-2.css" rel="stylesheet">
-    <link href="<?= $baseUrl ?>assets/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -60,9 +60,9 @@ $baseUrl = base_url();
     </div>
 </div>
 
-<script src="<?= $baseUrl ?>assets/vendor/jquery/jquery.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/bootstrap/js/bootstrap.min.js"></script>
-<script src="<?= $baseUrl ?>assets/vendor/metisMenu/metisMenu.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/1.1.3/metisMenu.min.js"></script>
 <script src="<?= $baseUrl ?>assets/dist/js/sb-admin-2.js"></script>
 
 </body>

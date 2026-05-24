@@ -1,6 +1,11 @@
 # docker-compose untuk Coolify (mode "Docker Compose")
-# Coolify akan inject SERVICE_FQDN_APP, dan variabel-variabel database
-# yang Anda isi di panel ke dalam env aplikasi.
+# Environment variables yang harus di-set di Coolify (tab Environment Variables):
+#   APP_BASE_URL          → URL aplikasi dengan trailing slash (mis. http://abc.sslip.io/)
+#   FORCE_HTTPS           → true / false (default false; set true kalau pakai SSL)
+#   MYSQL_ROOT_PASSWORD   → password root MariaDB
+#   MYSQL_DATABASE        → nama database (default db_letter)
+#   MYSQL_USER            → user database (default letter_user)
+#   MYSQL_PASSWORD        → password user database
 
 services:
   app:
@@ -8,27 +13,22 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    # expose (bukan ports) agar Traefik (reverse proxy Coolify) bisa route ke port 80 container
     expose:
       - "80"
     environment:
-      # Coolify auto-replace SERVICE_FQDN_APP_80 dengan FQDN yang Anda set di tab Domains.
-      # Variabel ini juga jadi sinyal ke Coolify bahwa port 80 service `app` perlu di-route.
+      # Trigger Coolify mengarahkan domain ke port 80 service ini
       - SERVICE_FQDN_APP_80
+      # Konfigurasi CI4 (diterjemahkan ke file .env oleh entrypoint.sh)
       - CI_ENVIRONMENT=${CI_ENVIRONMENT:-production}
-      - app.baseURL=${SERVICE_FQDN_APP_80:-${APP_BASE_URL}}
-      - app.forceGlobalSecureRequests=${FORCE_HTTPS:-false}
-      - database.default.hostname=mariadb
-      - database.default.database=${MYSQL_DATABASE:-db_letter}
-      - database.default.username=${MYSQL_USER:-letter_user}
-      - database.default.password=${MYSQL_PASSWORD}
-      - database.default.DBDriver=MySQLi
-      - database.default.port=3306
-      - database.default.charset=utf8mb4
-      - database.default.DBCollat=utf8mb4_general_ci
+      - APP_BASE_URL=${APP_BASE_URL}
+      - FORCE_HTTPS=${FORCE_HTTPS:-false}
+      # Database
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE:-db_letter}
+      - DB_USERNAME=${MYSQL_USER:-letter_user}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
     volumes:
-      # File upload disimpan di /var/www/html/uploads (root project).
-      # public/uploads adalah symlink ke folder ini, dibuat di Dockerfile.
       - uploads:/var/www/html/uploads
       - writable:/var/www/html/writable
     depends_on:
@@ -39,7 +39,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 60s
 
   mariadb:
     image: mariadb:10.11
