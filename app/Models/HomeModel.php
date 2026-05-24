@@ -197,10 +197,10 @@ class HomeModel extends Model
         return $this->getFileNameFromSurat('surat_keluar', $idSurat);
     }
 
-    // public function getNamaFileSuratMasuk(int $idSurat): ?string
-    // {
-    //     return $this->getFileNameFromSurat('proposal', $idSurat);
-    // }
+    public function getNamaFileSuratMasuk(int $idSurat): ?string
+    {
+        return $this->getFileNameFromSurat('proposal', $idSurat);
+    }
 
     public function getJabatan(): array
     {
@@ -273,9 +273,41 @@ class HomeModel extends Model
 
     private function getFileNameFromSurat(string $table, int $idSurat): ?string
     {
+        // File upload column is optional — current seeded schema (db_letter.sql)
+        // does not include `file_surat` on either `proposal` or `surat_keluar`.
+        // Skip the lookup gracefully so callers (e.g. hapus_surat_*) can proceed
+        // to delete the row instead of crashing on "Unknown column 'file_surat'".
+        if (! in_array('file_surat', $this->columnsFor($table), true)) {
+            return null;
+        }
+
         $row = $this->findRowById($table, $idSurat, 'file_surat');
 
         return $row?->file_surat;
+    }
+
+    /**
+     * Cache of column lists per table to avoid hitting information_schema
+     * on every call within a single request.
+     *
+     * @var array<string, list<string>>
+     */
+    private array $columnsCache = [];
+
+    /**
+     * @return list<string>
+     */
+    private function columnsFor(string $table): array
+    {
+        if (! array_key_exists($table, $this->columnsCache)) {
+            try {
+                $this->columnsCache[$table] = $this->db->getFieldNames($table) ?: [];
+            } catch (\Throwable) {
+                $this->columnsCache[$table] = [];
+            }
+        }
+
+        return $this->columnsCache[$table];
     }
 
     private function disposisiData(int $idSurat, array $data): array

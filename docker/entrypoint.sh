@@ -56,4 +56,59 @@ chmod 640 /var/www/html/.env
 
 echo "[entrypoint] .env generated. baseURL=${APP_BASE_URL:-<unset>}"
 
+# ----------------------------------------------------------------------------
+# Bootstrap skema database.
+# Coolify kadang membuat volume db_data SEBELUM init SQL di-bake ke image
+# MariaDB. Akibatnya /docker-entrypoint-initdb.d/ di-skip karena data dir
+# tidak kosong, dan database `db_letter` tetap tanpa tabel.
+# Di sini kita cek apakah tabel `pegawai` ada — kalau tidak, import
+# db_letter.sql dari image app (sudah ter-COPY ke /var/www/html/).
+# ----------------------------------------------------------------------------
+DB_HOST_RESOLVED="${DB_HOST:-mariadb}"
+DB_PORT_RESOLVED="${DB_PORT:-3306}"
+DB_DATABASE_RESOLVED="${DB_DATABASE:-db_letter}"
+DB_USERNAME_RESOLVED="${DB_USERNAME:-letter_user}"
+SQL_FILE="/var/www/html/db_letter.sql"
+
+if [ -f "${SQL_FILE}" ] && command -v mysql >/dev/null 2>&1 && [ -n "${DB_PASSWORD:-}" ]; then
+    echo "[entrypoint] Memeriksa skema di ${DB_HOST_RESOLVED}:${DB_PORT_RESOLVED}/${DB_DATABASE_RESOLVED}..."
+
+    # Tunggu MariaDB siap (max ~60 detik).
+    DB_READY=0
+    for i in $(seq 1 30); do
+        if mysql -h"${DB_HOST_RESOLVED}" -P"${DB_PORT_RESOLVED}" \
+                 -u"${DB_USERNAME_RESOLVED}" -p"${DB_PASSWORD}" \
+                 -e "SELECT 1" "${DB_DATABASE_RESOLVED}" >/dev/null 2>&1; then
+            DB_READY=1
+            break
+        fi
+        sleep 2
+    done
+
+    if [ "${DB_READY}" = "1" ]; then
+        TABLE_EXISTS=$(mysql -h"${DB_HOST_RESOLVED}" -P"${DB_PORT_RESOLVED}" \
+            -u"${DB_USERNAME_RESOLVED}" -p"${DB_PASSWORD}" \
+            -N -B -e "SELECT COUNT(*) FROM information_schema.tables \
+                      WHERE table_schema='${DB_DATABASE_RESOLVED}' \
+                      AND table_name='pegawai'" 2>/dev/null || echo "0")
+
+        if [ "${TABLE_EXISTS}" = "0" ]; then
+            echo "[entrypoint] Tabel 'pegawai' belum ada — import db_letter.sql..."
+            if mysql -h"${DB_HOST_RESOLVED}" -P"${DB_PORT_RESOLVED}" \
+                     -u"${DB_USERNAME_RESOLVED}" -p"${DB_PASSWORD}" \
+                     "${DB_DATABASE_RESOLVED}" < "${SQL_FILE}"; then
+                echo "[entrypoint] Import skema berhasil."
+            else
+                echo "[entrypoint] WARNING: Import skema gagal. Cek log Coolify."
+            fi
+        else
+            echo "[entrypoint] Skema sudah ada, skip import."
+        fi
+    else
+        echo "[entrypoint] WARNING: MariaDB tidak respond dalam 60 detik. Skip bootstrap skema."
+    fi
+else
+    echo "[entrypoint] Skip bootstrap skema (SQL file tidak ada, mysql client tidak terpasang, atau DB_PASSWORD kosong)."
+fi
+
 exec "$@"
