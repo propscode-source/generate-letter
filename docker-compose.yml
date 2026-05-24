@@ -1,0 +1,61 @@
+# docker-compose untuk Coolify (mode "Docker Compose")
+# Coolify akan inject SERVICE_FQDN_APP, dan variabel-variabel database
+# yang Anda isi di panel ke dalam env aplikasi.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Coolify otomatis set FQDN ini saat Anda mengaktifkan domain
+      - SERVICE_FQDN_APP_80
+      - CI_ENVIRONMENT=${CI_ENVIRONMENT:-production}
+      - app.baseURL=${APP_BASE_URL}
+      - app.forceGlobalSecureRequests=true
+      - database.default.hostname=mariadb
+      - database.default.database=${MYSQL_DATABASE:-db_letter}
+      - database.default.username=${MYSQL_USER:-letter_user}
+      - database.default.password=${MYSQL_PASSWORD}
+      - database.default.DBDriver=MySQLi
+      - database.default.port=3306
+      - database.default.charset=utf8mb4
+      - database.default.DBCollat=utf8mb4_general_ci
+    volumes:
+      # File yang di-upload user HARUS persist agar tidak hilang saat redeploy
+      - uploads_public:/var/www/html/public/uploads
+      - uploads_root:/var/www/html/uploads
+      - writable:/var/www/html/writable
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-db_letter}
+      - MYSQL_USER=${MYSQL_USER:-letter_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  uploads_public:
+  uploads_root:
+  writable:
+  db_data:

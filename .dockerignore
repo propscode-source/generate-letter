@@ -1,0 +1,44 @@
+.git
+.gitignore
+.gitattributes
+.editorconfig
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Dev / test
+tests/
+phpunit.xml.dist
+phpunit.xml
+preload.php
+
+# Composer dev artifacts
+vendor/
+
+# Local env (jangan ikut masuk image)
+.env
+
+# Writable runtime files — akan dibuat via volume
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/debugbar/*
+!writable/cache/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/debugbar/index.html
+
+# Uploads dev — pakai volume di produksi
+uploads/*
+public/uploads/*
+!uploads/index.html
+!public/uploads/index.html
+
+# Dump SQL: jangan masuk image
+*.sql
+
+# Dokumentasi & file repo
+README.md
+DEPLOY.md
+LICENSE
