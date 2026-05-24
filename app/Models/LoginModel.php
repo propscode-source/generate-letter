@@ -10,12 +10,26 @@ class LoginModel extends Model
 
     public function findUserByCredentials(string $nik, string $password): ?object
     {
-        $user = $this->db->table('pegawai')
-            ->select('pegawai.*, jabatan.nama_jabatan, jabatan.level')
-            ->join('jabatan', 'jabatan.id_jabatan = pegawai.id_jabatan')
-            ->where('nik', $nik)
-            ->get()
-            ->getRow();
+        $jabatanColumns = $this->existingColumns('jabatan');
+        $hasLevel       = in_array('level', $jabatanColumns, true);
+        $hasNamaJabatan = in_array('nama_jabatan', $jabatanColumns, true);
+
+        $select = ['pegawai.*'];
+        if ($hasNamaJabatan) {
+            $select[] = 'jabatan.nama_jabatan';
+        }
+        if ($hasLevel) {
+            $select[] = 'jabatan.level';
+        }
+
+        $builder = $this->db->table('pegawai')
+            ->select(implode(', ', $select));
+
+        if ($hasNamaJabatan || $hasLevel) {
+            $builder->join('jabatan', 'jabatan.id_jabatan = pegawai.id_jabatan', 'left');
+        }
+
+        $user = $builder->where('nik', $nik)->get()->getRow();
 
         if ($user === null) {
             return null;
@@ -26,6 +40,19 @@ class LoginModel extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Return the list of columns that actually exist on the given table.
+     * Returns [] if the table itself is missing — caller can decide how to handle.
+     */
+    private function existingColumns(string $table): array
+    {
+        try {
+            return $this->db->getFieldNames($table) ?: [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     private function matchesPassword(string $plainPassword, string $storedHash): bool

@@ -32,16 +32,52 @@ class Login extends BaseController
             return $this->redirectWithNotif(self::ROUTE_LOGIN, $this->validationErrorMessage());
         }
 
-        $user = $this->attemptLogin(
-            (string) $this->request->getPost('nik'),
-            (string) $this->request->getPost('password'),
-        );
+        try {
+            $user = $this->attemptLogin(
+                (string) $this->request->getPost('nik'),
+                (string) $this->request->getPost('password'),
+            );
+        } catch (\Throwable $e) {
+            log_message(
+                'error',
+                'Login DB error ({class}): {message} @ {file}:{line}',
+                [
+                    'class'   => $e::class,
+                    'message' => $e->getMessage(),
+                    'file'    => $e->getFile(),
+                    'line'    => (string) $e->getLine(),
+                ]
+            );
+
+            return $this->redirectWithNotif(
+                self::ROUTE_LOGIN,
+                'Tidak dapat memproses login saat ini. Hubungi administrator (cek schema database).'
+            );
+        }
 
         if ($user === null) {
             return $this->redirectWithNotif(self::ROUTE_LOGIN, 'NIK atau Password salah!');
         }
 
-        $this->storeAuthenticatedUser($user);
+        try {
+            $this->storeAuthenticatedUser($user);
+        } catch (\Throwable $e) {
+            log_message(
+                'error',
+                'Login session error ({class}): {message} @ {file}:{line}',
+                [
+                    'class'   => $e::class,
+                    'message' => $e->getMessage(),
+                    'file'    => $e->getFile(),
+                    'line'    => (string) $e->getLine(),
+                ]
+            );
+
+            return $this->redirectWithNotif(
+                self::ROUTE_LOGIN,
+                'Sesi tidak dapat disimpan. Cek izin folder writable/session.'
+            );
+        }
 
         return $this->redirectWithNotif(self::ROUTE_HOME, 'Login berhasil!');
     }
@@ -78,8 +114,8 @@ class Login extends BaseController
             'id_jabatan'   => $user->id_jabatan,
             'nama_pegawai' => $user->nama_pegawai,
             'nama_jabatan' => $user->nama_jabatan,
-            'level'        => $user->level,
-            'ormawa_id'     => $user->ormawa_id,
+            'level'        => $user->level ?? null,
+            'ormawa_id'    => $user->ormawa_id ?? null,
         ]);
     }
 }
