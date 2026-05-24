@@ -51,7 +51,7 @@ class Login extends BaseController
 
             return $this->redirectWithNotif(
                 self::ROUTE_LOGIN,
-                'Tidak dapat memproses login saat ini. Hubungi administrator (cek schema database).'
+                $this->describeLoginException($e)
             );
         }
 
@@ -75,7 +75,8 @@ class Login extends BaseController
 
             return $this->redirectWithNotif(
                 self::ROUTE_LOGIN,
-                'Sesi tidak dapat disimpan. Cek izin folder writable/session.'
+                'Sesi tidak dapat disimpan: ' . esc($e->getMessage())
+                    . ' — pastikan writable/session writable oleh user www-data.'
             );
         }
 
@@ -102,6 +103,40 @@ class Login extends BaseController
     private function attemptLogin(string $nik, string $password): ?object
     {
         return $this->loginModel->findUserByCredentials($nik, $password);
+    }
+
+    /**
+     * Convert a raw DB / framework exception into a user-facing message that
+     * tells the admin exactly what is wrong and how to fix it. We intentionally
+     * expose the underlying message because this is an internal tool — flip
+     * this back to a generic message once the cause is identified.
+     */
+    private function describeLoginException(\Throwable $e): string
+    {
+        $raw  = $e->getMessage();
+        $hint = $this->loginExceptionHint($raw);
+
+        // esc() is provided by url/form helpers loaded via $helpers in BaseController.
+        return 'Gagal login: ' . esc($raw) . ($hint !== '' ? ' — ' . $hint : '');
+    }
+
+    private function loginExceptionHint(string $message): string
+    {
+        $msg = strtolower($message);
+
+        return match (true) {
+            str_contains($msg, "table") && str_contains($msg, "doesn't exist")
+                => "Tabel belum dibuat. Import db_letter.sql ke MariaDB (lihat DEPLOY.md langkah 8).",
+            str_contains($msg, 'unknown column')
+                => "Skema DB lama / tidak sinkron. Re-import db_letter.sql atau jalankan ALTER TABLE yang sesuai.",
+            str_contains($msg, 'access denied') || str_contains($msg, 'authentication')
+                => "Kredensial DB salah. Cek env MYSQL_USER / MYSQL_PASSWORD di Coolify.",
+            str_contains($msg, 'unable to connect') || str_contains($msg, "can't connect") || str_contains($msg, 'connection refused')
+                => "Container MariaDB tidak terjangkau. Cek apakah service mariadb sudah healthy.",
+            str_contains($msg, 'unknown database')
+                => "Database belum dibuat. Cek env MYSQL_DATABASE di Coolify.",
+            default => 'Cek writable/logs/log-' . date('Y-m-d') . '.php di container app untuk detail.',
+        };
     }
 
     private function storeAuthenticatedUser(object $user): void
