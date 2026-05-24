@@ -42,7 +42,9 @@ services:
       start_period: 60s
 
   mariadb:
-    image: mariadb:10.11
+    build:
+      context: .
+      dockerfile: docker/mariadb.Dockerfile
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -51,7 +53,6 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
-      - ./db_letter.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
