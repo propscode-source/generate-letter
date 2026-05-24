@@ -23,9 +23,9 @@ services:
       - database.default.charset=utf8mb4
       - database.default.DBCollat=utf8mb4_general_ci
     volumes:
-      # File yang di-upload user HARUS persist agar tidak hilang saat redeploy
-      - uploads_public:/var/www/html/public/uploads
-      - uploads_root:/var/www/html/uploads
+      # File upload disimpan di /var/www/html/uploads (root project).
+      # public/uploads adalah symlink ke folder ini, dibuat di Dockerfile.
+      - uploads:/var/www/html/uploads
       - writable:/var/www/html/writable
     depends_on:
       mariadb:
@@ -55,7 +55,6 @@ services:
       start_period: 20s
 
 volumes:
-  uploads_public:
-  uploads_root:
+  uploads:
   writable:
   db_data:

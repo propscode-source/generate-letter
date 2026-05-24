@@ -43,11 +43,17 @@ RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --opti
 # --- Salin source code ---
 COPY . .
 
+# --- public/uploads di repo aslinya simbolic link ke ../uploads (broken di Windows). ---
+# --- Hapus file dummy & recreate sebagai symlink asli agar URL /uploads/* dapat diakses. ---
+RUN rm -f /var/www/html/public/uploads \
+    && ln -s ../uploads /var/www/html/public/uploads \
+    && mkdir -p /var/www/html/uploads /var/www/html/writable
+
 # --- Permission writable & uploads ---
 RUN chown -R www-data:www-data /var/www/html \
     && find /var/www/html -type d -exec chmod 755 {} \; \
     && find /var/www/html -type f -exec chmod 644 {} \; \
-    && chmod -R 775 /var/www/html/writable /var/www/html/public/uploads /var/www/html/uploads || true
+    && chmod -R 775 /var/www/html/writable /var/www/html/uploads || true
 
 # --- Entrypoint untuk fix permission volume saat container start ---
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

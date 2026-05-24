@@ -1,242 +1,188 @@
--- phpMyAdmin SQL Dump
--- version 4.7.5
--- https://www.phpmyadmin.net/
---
--- Host: localhost
--- Generation Time: Feb 07, 2018 at 07:40 AM
--- Server version: 10.1.28-MariaDB
--- PHP Version: 7.1.11
+-- ============================================================================
+-- Dump database: db_letter
+-- Target     : MariaDB 10.11 / MySQL 8.x (container Coolify)
+-- Charset    : utf8mb4 / utf8mb4_general_ci
+-- ============================================================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
 SET time_zone = "+00:00";
+SET NAMES utf8mb4;
 
+START TRANSACTION;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- Database `db_letter` sudah dibuat otomatis oleh container MariaDB
+-- (lewat env MYSQL_DATABASE). Kita hanya pilih database:
+-- USE db_letter;   -- biarkan client yang pilih, atau aktifkan jika import manual.
 
---
--- Database: `db_letter`
---
+-- ----------------------------------------------------------------------------
+-- Table: ormawa  (parent — harus dibuat lebih dulu karena dirujuk FK)
+-- ----------------------------------------------------------------------------
+CREATE TABLE `ormawa` (
+  `id`          INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nama_ormawa` VARCHAR(100)     NOT NULL,
+  `singkatan`   VARCHAR(100)     NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+INSERT INTO `ormawa` (`id`, `nama_ormawa`, `singkatan`) VALUES
+(1,  'Badan Eksekutif Mahasiswa Fasilkom',     'BEM Fasilkom'),
+(2,  'DPM Fasilkom Unsri',                     'DPM Fasilkom Unsri'),
+(3,  'Himpunan Mahasiswa Sistem Informasi',    'HIMSI'),
+(4,  'Himpunan Mahasiswa Teknik Informatika',  'HMIF'),
+(5,  'Himpunan Mahasiswa Sistem Komputer',     'HIMASISKO'),
+(6,  'Himpunan Mahasiswa Diploma Komputer',    'HIMDIKO'),
+(7,  'Intel Fasilkom',                         'Intel Fasilkom'),
+(8,  'NAC',                                    'NAC'),
+(9,  'SBI WIFI',                               'SBI WIFI'),
+(10, 'FASCO',                                  'FASCO');
 
---
--- Table structure for table `disposisi`
---
-
-CREATE TABLE `disposisi` (
-  `id_disposisi` int(11) NOT NULL,
-  `id_surat` int(11) NOT NULL,
-  `id_pegawai_pengirim` int(11) NOT NULL,
-  `id_pegawai_penerima` int(11) NOT NULL,
-  `tgl_disposisi` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `keterangan` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `disposisi`
---
-
-INSERT INTO `disposisi` (`id_disposisi`, `id_surat`, `id_pegawai_pengirim`, `id_pegawai_penerima`, `tgl_disposisi`, `keterangan`) VALUES
-(4, 4, 1, 2, '2018-02-06 06:55:59', 'Cobaaa'),
-(6, 3, 1, 4, '2018-02-06 07:17:00', 'Coba testtt'),
-(7, 4, 1, 3, '2018-02-06 07:17:32', 'Test 123455'),
-(8, 4, 2, 3, '2018-02-07 06:05:23', 'Ini dari kepala marketing'),
-(11, 4, 3, 4, '2018-02-07 06:18:29', 'Tolong ea mas iqball'),
-(12, 4, 2, 4, '2018-02-07 06:39:13', 'Tolong ea maseee');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `jabatan`
---
-
+-- ----------------------------------------------------------------------------
+-- Table: jabatan
+-- ----------------------------------------------------------------------------
 CREATE TABLE `jabatan` (
-  `id_jabatan` int(11) NOT NULL,
-  `nama_jabatan` varchar(100) NOT NULL,
-  `level` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `jabatan`
---
+  `id_jabatan`   INT(11)      NOT NULL AUTO_INCREMENT,
+  `nama_jabatan` VARCHAR(100) NOT NULL,
+  `level`        INT(11)      NOT NULL,
+  PRIMARY KEY (`id_jabatan`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `jabatan` (`id_jabatan`, `nama_jabatan`, `level`) VALUES
-(1, 'Sekretaris', 1),
+(1, 'Sekretaris',       1),
 (2, 'Kepala Marketing', 2),
-(3, 'Supervisor', 3),
-(4, 'Pegawai', 4);
+(3, 'Supervisor',       3),
+(4, 'ORMAWA',           4),
+(6, 'ORMAWA',           2);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `pegawai`
---
-
+-- ----------------------------------------------------------------------------
+-- Table: pegawai
+--   Catatan: ormawa_id bukan UNIQUE (memungkinkan 1 ormawa punya >1 pegawai).
+--   Password disimpan sebagai MD5 (default akun seed = 'admin').
+-- ----------------------------------------------------------------------------
 CREATE TABLE `pegawai` (
-  `id_pegawai` int(11) NOT NULL,
-  `nik` int(11) NOT NULL,
-  `nama_pegawai` varchar(200) NOT NULL,
-  `id_jabatan` int(11) NOT NULL,
-  `password` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id_pegawai`   INT(11)              NOT NULL AUTO_INCREMENT,
+  `nik`          INT(11)              NOT NULL,
+  `nama_pegawai` VARCHAR(200)         NOT NULL,
+  `id_jabatan`   INT(11)              NOT NULL,
+  `password`     TEXT                 NOT NULL,
+  `ormawa_id`    INT(10) UNSIGNED     DEFAULT NULL,
+  PRIMARY KEY (`id_pegawai`),
+  KEY `idx_pegawai_jabatan` (`id_jabatan`),
+  KEY `idx_pegawai_ormawa` (`ormawa_id`),
+  CONSTRAINT `fk_pegawai_jabatan`
+    FOREIGN KEY (`id_jabatan`) REFERENCES `jabatan` (`id_jabatan`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pegawai_ormawa`
+    FOREIGN KEY (`ormawa_id`) REFERENCES `ormawa` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `pegawai`
---
+INSERT INTO `pegawai` (`id_pegawai`, `nik`, `nama_pegawai`, `id_jabatan`, `password`, `ormawa_id`) VALUES
+(1, 999, 'Toni Haikal',         1, '21232f297a57a5a743894a0e4a801fc3', NULL),
+(2, 888, 'Felix Satya',         2, '21232f297a57a5a743894a0e4a801fc3', NULL),
+(3, 777, 'Armaningtyas Utami',  3, '21232f297a57a5a743894a0e4a801fc3', NULL),
+(4, 666, 'DPM Fasilkom Unsri',  4, '21232f297a57a5a743894a0e4a801fc3', 2),
+(5, 555, 'HIMSI',               4, '21232f297a57a5a743894a0e4a801fc3', NULL);
 
-INSERT INTO `pegawai` (`id_pegawai`, `nik`, `nama_pegawai`, `id_jabatan`, `password`) VALUES
-(1, 999, 'Christian Doxa Hamasiah', 1, '21232f297a57a5a743894a0e4a801fc3'),
-(2, 888, 'Felix Satya', 2, '21232f297a57a5a743894a0e4a801fc3'),
-(3, 777, 'Armaningtyas Utami', 3, '21232f297a57a5a743894a0e4a801fc3'),
-(4, 666, 'M. Miftahul Iqbal Albana', 4, '21232f297a57a5a743894a0e4a801fc3');
+-- ----------------------------------------------------------------------------
+-- Table: proposal
+-- ----------------------------------------------------------------------------
+CREATE TABLE `proposal` (
+  `id_surat`        INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ormawa_id`       INT(10) UNSIGNED DEFAULT NULL,
+  `judul`           VARCHAR(255)     DEFAULT NULL,
+  `tgl_terima`      DATE             DEFAULT NULL,
+  `status_proposal` VARCHAR(50)      DEFAULT NULL,
+  `catatan`         TEXT             DEFAULT NULL,
+  PRIMARY KEY (`id_surat`),
+  KEY `idx_proposal_ormawa` (`ormawa_id`),
+  CONSTRAINT `fk_proposal_ormawa`
+    FOREIGN KEY (`ormawa_id`) REFERENCES `ormawa` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+INSERT INTO `proposal` (`id_surat`, `ormawa_id`, `judul`, `tgl_terima`, `status_proposal`, `catatan`) VALUES
+(2, 2, 'Kegiatan INAGURASI Tahun 2025/2026',                  '2026-04-22', 'diterima', '-'),
+(3, 2, 'Kunjungan Panti Asuhan di Palembang',                 '2026-04-21', 'direvisi', 'Revisi RAB'),
+(4, 4, 'Musyawarah Besar Pemilihan Ketua Umum DPM Fasilkom',  '2026-04-21', 'diajukan', '-');
 
---
--- Table structure for table `surat_keluar`
---
-
+-- ----------------------------------------------------------------------------
+-- Table: surat_keluar
+--   Catatan: ormawa_id bukan UNIQUE (1 ormawa boleh punya banyak surat).
+-- ----------------------------------------------------------------------------
 CREATE TABLE `surat_keluar` (
-  `id_surat` int(11) NOT NULL,
-  `nomor_surat` varchar(200) NOT NULL,
-  `tgl_kirim` date NOT NULL,
-  `tujuan` varchar(200) NOT NULL,
-  `perihal` varchar(200) NOT NULL,
-  `file_surat` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id_surat`       INT(11)          NOT NULL AUTO_INCREMENT,
+  `ormawa_id`      INT(10) UNSIGNED DEFAULT NULL,
+  `judul_j`        VARCHAR(200)     NOT NULL,
+  `tgl_kirim`      DATE             NOT NULL,
+  `status_laporan` VARCHAR(100)     NOT NULL,
+  `catatan`        VARCHAR(100)     NOT NULL,
+  PRIMARY KEY (`id_surat`),
+  KEY `idx_surat_keluar_ormawa` (`ormawa_id`),
+  CONSTRAINT `fk_surat_keluar_ormawa`
+    FOREIGN KEY (`ormawa_id`) REFERENCES `ormawa` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `surat_keluar`
---
+INSERT INTO `surat_keluar` (`id_surat`, `ormawa_id`, `judul_j`, `tgl_kirim`, `status_laporan`, `catatan`) VALUES
+(1, 10, 'asasa',  '2026-05-13', 'diterima', 'asasa'),
+(2, 2,  'aaaavv', '2026-05-04', 'direvisi', 'asas');
 
-INSERT INTO `surat_keluar` (`id_surat`, `nomor_surat`, `tgl_kirim`, `tujuan`, `perihal`, `file_surat`) VALUES
-(4, 'INM/129/KPW', '2018-02-01', 'SMK DB Jombang', 'Undangan Pernikahannn', 'Nilai_Siswa_9990244809.pdf'),
-(5, 'KOB/1212/FFF', '2018-01-31', 'SMPN 2 Jombang', 'Undangan HUT Telkom', 'RULEBOOK-ISHOT-COMPETITION-IDEACTION-20173.pdf');
+-- ----------------------------------------------------------------------------
+-- Table: surat_masuk1  (dirujuk FK oleh disposisi)
+-- ----------------------------------------------------------------------------
+CREATE TABLE `surat_masuk1` (
+  `id_surat`        INT(11)          NOT NULL AUTO_INCREMENT,
+  `ormawa_id`       INT(10) UNSIGNED DEFAULT NULL,
+  `judul`           VARCHAR(200)     NOT NULL,
+  `tgl_terima`      DATE             NOT NULL,
+  `status_proposal` VARCHAR(100)     NOT NULL,
+  `catatan`         VARCHAR(200)     NOT NULL,
+  PRIMARY KEY (`id_surat`),
+  KEY `idx_surat_masuk1_ormawa` (`ormawa_id`),
+  CONSTRAINT `fk_surat_masuk1_ormawa`
+    FOREIGN KEY (`ormawa_id`) REFERENCES `ormawa` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+-- ----------------------------------------------------------------------------
+-- Table: surat_keluar1  (legacy — dipertahankan untuk kompatibilitas data lama)
+-- ----------------------------------------------------------------------------
+CREATE TABLE `surat_keluar1` (
+  `id_surat`       INT(11)      NOT NULL AUTO_INCREMENT,
+  `judul_j`        VARCHAR(200) NOT NULL,
+  `tgl_kirim`      DATE         NOT NULL,
+  `status_laporan` VARCHAR(200) NOT NULL,
+  `catatan`        VARCHAR(200) NOT NULL,
+  PRIMARY KEY (`id_surat`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Table structure for table `surat_masuk`
---
+INSERT INTO `surat_keluar1` (`id_surat`, `judul_j`, `tgl_kirim`, `status_laporan`, `catatan`) VALUES
+(4, 'INM/129/KPW',  '2018-02-01', 'SMK DB Jombang', 'Undangan Pernikahannn'),
+(5, 'KOB/1212/FFF', '2018-01-31', 'SMPN 2 Jombang', 'Undangan HUT Telkom');
 
-CREATE TABLE `surat_masuk` (
-  `id_surat` int(11) NOT NULL,
-  `nomor_surat` varchar(200) NOT NULL,
-  `tgl_kirim` date NOT NULL,
-  `tgl_terima` date NOT NULL,
-  `pengirim` varchar(200) NOT NULL,
-  `penerima` varchar(200) NOT NULL,
-  `perihal` varchar(200) NOT NULL,
-  `file_surat` text NOT NULL,
-  `status` enum('proses','selesai') NOT NULL DEFAULT 'proses'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- ----------------------------------------------------------------------------
+-- Table: disposisi
+-- ----------------------------------------------------------------------------
+CREATE TABLE `disposisi` (
+  `id_disposisi`        INT(11)   NOT NULL AUTO_INCREMENT,
+  `id_surat`            INT(11)   NOT NULL,
+  `id_pegawai_pengirim` INT(11)   NOT NULL,
+  `id_pegawai_penerima` INT(11)   NOT NULL,
+  `tgl_disposisi`       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `keterangan`          TEXT      NOT NULL,
+  PRIMARY KEY (`id_disposisi`),
+  KEY `idx_disposisi_surat` (`id_surat`),
+  KEY `idx_disposisi_penerima` (`id_pegawai_penerima`),
+  KEY `idx_disposisi_pengirim` (`id_pegawai_pengirim`),
+  CONSTRAINT `fk_disposisi_surat`
+    FOREIGN KEY (`id_surat`) REFERENCES `surat_masuk1` (`id_surat`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_disposisi_penerima`
+    FOREIGN KEY (`id_pegawai_penerima`) REFERENCES `pegawai` (`id_pegawai`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_disposisi_pengirim`
+    FOREIGN KEY (`id_pegawai_pengirim`) REFERENCES `pegawai` (`id_pegawai`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `surat_masuk`
---
-
-INSERT INTO `surat_masuk` (`id_surat`, `nomor_surat`, `tgl_kirim`, `tgl_terima`, `pengirim`, `penerima`, `perihal`, `file_surat`, `status`) VALUES
-(3, 'INM/129/KPW', '2018-01-01', '2018-01-04', 'SMK 4 GRAFIKA', 'Kepala Sekolah', 'Undangan HUT SMK 4', 'RULEBOOK-ISHOT-COMPETITION-IDEACTION-2017.pdf', 'proses'),
-(4, 'INV/777/IND', '2018-01-12', '2018-01-13', 'SMPN 5 JOMBANG', 'Sekretaris', 'Undangan Workshop', 'RULEBOOK-ISHOT-COMPETITION-IDEACTION-20171.pdf', 'proses'),
-(5, 'KKN/993/JJH', '2018-01-03', '2018-01-06', 'SMPN 2 MALANG', 'Sekretaris', 'Undangan Workshop', 'August_Assignment.pdf', 'proses');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `disposisi`
---
-ALTER TABLE `disposisi`
-  ADD PRIMARY KEY (`id_disposisi`),
-  ADD KEY `id_surat` (`id_surat`),
-  ADD KEY `id_pegawai_penerima` (`id_pegawai_penerima`);
-
---
--- Indexes for table `jabatan`
---
-ALTER TABLE `jabatan`
-  ADD PRIMARY KEY (`id_jabatan`),
-  ADD KEY `id_jabatan` (`id_jabatan`);
-
---
--- Indexes for table `pegawai`
---
-ALTER TABLE `pegawai`
-  ADD PRIMARY KEY (`id_pegawai`),
-  ADD KEY `id_pegawai` (`id_pegawai`),
-  ADD KEY `id_jabatan` (`id_jabatan`);
-
---
--- Indexes for table `surat_keluar`
---
-ALTER TABLE `surat_keluar`
-  ADD PRIMARY KEY (`id_surat`),
-  ADD KEY `id_surat` (`id_surat`);
-
---
--- Indexes for table `surat_masuk`
---
-ALTER TABLE `surat_masuk`
-  ADD PRIMARY KEY (`id_surat`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `disposisi`
---
-ALTER TABLE `disposisi`
-  MODIFY `id_disposisi` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
--- AUTO_INCREMENT for table `jabatan`
---
-ALTER TABLE `jabatan`
-  MODIFY `id_jabatan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `pegawai`
---
-ALTER TABLE `pegawai`
-  MODIFY `id_pegawai` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `surat_keluar`
---
-ALTER TABLE `surat_keluar`
-  MODIFY `id_surat` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `surat_masuk`
---
-ALTER TABLE `surat_masuk`
-  MODIFY `id_surat` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `disposisi`
---
-ALTER TABLE `disposisi`
-  ADD CONSTRAINT `disposisi_ibfk_1` FOREIGN KEY (`id_surat`) REFERENCES `surat_masuk` (`id_surat`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `disposisi_pegawai_id_pegawai_fk` FOREIGN KEY (`id_pegawai_penerima`) REFERENCES `pegawai` (`id_pegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `pegawai`
---
-ALTER TABLE `pegawai`
-  ADD CONSTRAINT `pegawai_jabatan_id_jabatan_fk` FOREIGN KEY (`id_jabatan`) REFERENCES `jabatan` (`id_jabatan`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
